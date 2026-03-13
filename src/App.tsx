@@ -21,7 +21,13 @@ type AnimStyle =
   | 'flip'
   | 'blur'
   | 'bounce'
-  | 'neon';
+  | 'neon'
+  | 'scaleIn'
+  | 'slideLeft'
+  | 'slideDown'
+  | 'pulse'
+  | 'rotateIn'
+  | 'colorShift';
 
 type TextAlign = 'left' | 'center' | 'right';
 type DisplayUnit = 'char' | 'word' | 'line';
@@ -64,6 +70,12 @@ const ANIM_DEFS: Record<AnimStyle, AnimDef> = {
   blur:        { label: '模糊',     icon: '🌫️', description: '从虚到实对焦',           category: 'basic' },
   bounce:      { label: '弹跳',     icon: '🏀', description: '文字弹跳落下',           category: 'dynamic' },
   neon:        { label: '霓虹',     icon: '💡', description: '霓虹灯逐渐点亮',         category: 'special' },
+  scaleIn:     { label: '缩放',     icon: '🔍', description: '从无到有缩放出现',       category: 'basic' },
+  slideLeft:   { label: '滑入',     icon: '⬅️', description: '从右侧滑入',             category: 'basic' },
+  slideDown:   { label: '下滑',     icon: '⬇️', description: '从上方滑入',             category: 'basic' },
+  pulse:       { label: '脉冲',     icon: '💓', description: '呼吸式缩放效果',         category: 'dynamic' },
+  rotateIn:    { label: '旋转',     icon: '🌀', description: '旋转着进入',             category: 'dynamic' },
+  colorShift:  { label: '变色',     icon: '🎨', description: '颜色渐变过渡',           category: 'special' },
 };
 
 const PRESETS: Array<{ name: string; icon: string; segments: Partial<Segment>[] }> = [
@@ -211,6 +223,36 @@ function getUnitMotion(style: AnimStyle, index: number, speed: number, playing: 
         initial: { opacity: 0 },
         animate: { opacity: 1, transition: { delay: d, duration: 0.4 } },
       };
+    case 'scaleIn':
+      return {
+        initial: { opacity: 0, scale: 0 },
+        animate: { opacity: 1, scale: 1, transition: { delay: d, duration: 0.5, ease: 'easeOut' } },
+      };
+    case 'slideLeft':
+      return {
+        initial: { opacity: 0, x: 32 },
+        animate: { opacity: 1, x: 0, transition: { delay: d, duration: 0.4, ease: 'easeOut' } },
+      };
+    case 'slideDown':
+      return {
+        initial: { opacity: 0, y: -24 },
+        animate: { opacity: 1, y: 0, transition: { delay: d, duration: 0.45, ease: 'easeOut' } },
+      };
+    case 'pulse':
+      return {
+        initial: { opacity: 0, scale: 0.8 },
+        animate: { opacity: 1, scale: 1, transition: { delay: d, duration: 0.6, ease: 'easeOut' } },
+      };
+    case 'rotateIn':
+      return {
+        initial: { opacity: 0, rotate: -360 },
+        animate: { opacity: 1, rotate: 0, transition: { delay: d, duration: 0.8, ease: 'easeOut' } },
+      };
+    case 'colorShift':
+      return {
+        initial: { opacity: 0 },
+        animate: { opacity: 1, transition: { delay: d, duration: 0.6 } },
+      };
     default:
       return {
         initial: { opacity: 0 },
@@ -301,6 +343,23 @@ function AnimatedText({ segment, playing, onFinish }: AnimatedTextProps) {
                 initial={{ opacity: 0 }}
                 animate={playing ? { opacity: 1, textShadow: neonShadow } : { opacity: 0 }}
                 transition={{ delay: d, duration: 0.4 }}
+              >{unit === ' ' ? '\u00A0' : unit}</motion.span>
+            );
+          })}
+        </span>
+      ) : style === 'colorShift' ? (
+        <span style={{ display: 'block' }}>
+          {units.map((unit, i) => {
+            const d = i * (speed / 1000);
+            const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'];
+            const colorIndex = i % colors.length;
+            return (
+              <motion.span
+                key={`${key}-${i}`}
+                style={{ display: 'inline-block', whiteSpace: 'pre' }}
+                initial={{ opacity: 0, color: colors[colorIndex] }}
+                animate={playing ? { opacity: 1, color: colors[colorIndex] } : { opacity: 0 }}
+                transition={{ delay: d, duration: 0.6 }}
               >{unit === ' ' ? '\u00A0' : unit}</motion.span>
             );
           })}
